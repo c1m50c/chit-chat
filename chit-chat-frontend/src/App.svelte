@@ -1,47 +1,55 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+  const chatServerSocket: WebSocket = new WebSocket("ws://127.0.0.1:8000/ws");
+
+  let messages: string[] = [  ];
+  let message: string = "";
+
+  const sendMessageToChatServer = () => {
+    console.log(`Sent: \`${message}\``);
+    chatServerSocket.send(message);
+  }
+
+  chatServerSocket.addEventListener("message", (event) => {
+    console.log(`Received: \`${event.data}\``);
+    messages.push(event.data);
+    messages = messages;
+  });
 </script>
 
-<main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
-</main>
 
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
+  main {
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
   }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
+
+  form input {
+    width: 100%;
   }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
+
+  .message-container {
+    background-color: rgb(16, 16, 16);
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    max-height: 50vh;
+    min-height: 50vh;
+    min-width: 50vw;
   }
 </style>
+
+
+<h1>chit-chat</h1>
+
+<main>
+  <div class="message-container">
+    {#each messages as message }
+      <p class="message">{message}</p>
+    {/each}
+  </div>
+
+  <form on:submit|preventDefault={sendMessageToChatServer}>
+    <input bind:value={message} placeholder="Input" />
+  </form>
+</main>
